@@ -16,7 +16,7 @@ pub struct Args {
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Activates Heroku's maintenance mode for all apps listed in `src/heroku_apps.yml`
+    /// Activates Heroku's maintenance mode for all apps listed in `src/configs/heroku_apps.yml`
     /// given a maintenance window.
     MaintenanceMode {
         /// The start of the maintenance window, in UTC.
