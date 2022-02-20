@@ -39,10 +39,10 @@ pub fn execute(start: &NaiveDateTime, end: &NaiveDateTime) {
     let window = MaintenanceWindow::new(start, end);
 
     sleep_until(&window.start);
-    heroku_cli::maintenance::_execute(&configs, &HerokuCmd::MaintenanceMode(Status::On));
+    _execute(&configs, &HerokuCmd::MaintenanceMode(Status::On));
 
     sleep_until(&window.end);
-    heroku_cli::maintenance::_execute(&configs, &HerokuCmd::MaintenanceMode(Status::Off));
+    _execute(&configs, &HerokuCmd::MaintenanceMode(Status::Off));
 }
 
 fn get_cmd(mode: &HerokuCmd) -> &'static str {
