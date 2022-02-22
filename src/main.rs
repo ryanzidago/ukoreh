@@ -3,6 +3,7 @@
 mod configs;
 mod heroku_cli;
 
+use crate::heroku_cli::maintenance::{HerokuCmd, Status};
 use chrono::NaiveDateTime;
 use clap::{Parser, Subcommand};
 use simple_logger::SimpleLogger;
@@ -16,9 +17,8 @@ pub struct Args {
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Activates Heroku's maintenance mode for all apps listed in `src/configs/heroku_apps.yml`
-    /// given a maintenance window.
-    MaintenanceMode {
+    /// Activate Heroku's maintenance mode given a maintenance window.
+    MaintenanceWindow {
         /// The start of the maintenance window, in UTC.
         #[clap(short, long)]
         start: NaiveDateTime,
@@ -26,6 +26,16 @@ pub enum Command {
         /// The end of the maintenance window, in UTC.
         #[clap(short, long)]
         end: NaiveDateTime,
+    },
+
+    Maintenance {
+        /// Activate the maintenance mode on Heroku
+        #[clap(long)]
+        on: bool,
+
+        /// Deactivate the maintenance mode on Heroku
+        #[clap(long)]
+        off: bool,
     },
 }
 
@@ -36,6 +46,19 @@ fn main() {
     log::debug!("{args:?}");
 
     match &args.command {
-        Command::MaintenanceMode { start, end } => heroku_cli::maintenance::execute(start, end),
+        Command::MaintenanceWindow { start, end } => {
+            heroku_cli::maintenance::window::execute(start, end);
+        }
+        Command::Maintenance { on: true, off: _ } => {
+            let cmd = HerokuCmd::MaintenanceMode(Status::On);
+            heroku_cli::maintenance::execute(&cmd);
+        }
+
+        Command::Maintenance { on: _, off: true } => {
+            let cmd = HerokuCmd::MaintenanceMode(Status::Off);
+            heroku_cli::maintenance::execute(&cmd);
+        }
+
+        Command::Maintenance { on: _, off: _ } => (),
     }
 }
