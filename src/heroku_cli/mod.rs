@@ -1,8 +1,19 @@
-use std::process::{Command, Output};
-
 pub mod maintenance;
 
-pub fn execute_cmd(arg: &str, app_name: String) -> Output {
+use crate::configs;
+use std::process::{Command, Output};
+use std::str;
+
+pub enum HerokuCmd {
+    MaintenanceMode(Status),
+}
+
+pub enum Status {
+    On,
+    Off,
+}
+
+pub fn execute(arg: &str, app_name: String) -> Output {
     log::debug!("EXECUTING COMMAND: `heroku {arg:?} --app {app_name:?}");
 
     Command::new("heroku")
@@ -13,8 +24,40 @@ pub fn execute_cmd(arg: &str, app_name: String) -> Output {
         .expect("failed to execute command")
 }
 
+pub fn execute_for_all_apps_in_configs(mode: &HerokuCmd) {
+    let configs = configs::get();
+
+    let cmd = get_cmd(mode);
+    log::debug!("CMD: {cmd:?}");
+
+    println!("\n");
+    for (app, envs) in &configs["apps"] {
+        for env in envs {
+            let app_name = build_heroku_app_name_from_env(app, env);
+            let output = execute(cmd, app_name);
+            print_info(&output);
+            println!("\n");
+        }
+    }
+}
+
 pub fn build_heroku_app_name_from_env(app: &str, env: &str) -> String {
     format!("{}-{}", app, env)
+}
+
+fn get_cmd(mode: &HerokuCmd) -> &'static str {
+    match mode {
+        HerokuCmd::MaintenanceMode(Status::On) => "maintenance:on",
+        HerokuCmd::MaintenanceMode(Status::Off) => "maintenance:off",
+    }
+}
+
+fn print_info(output: &Output) {
+    let stdout = str::from_utf8(&output.stdout).expect("Failed to read STDOUT");
+    log::debug!("STDOUT: {stdout:?}");
+
+    let stderr = str::from_utf8(&output.stderr).expect("Failed to read STDIN");
+    log::debug!("STDERR: {stderr:?}");
 }
 
 mod tests {

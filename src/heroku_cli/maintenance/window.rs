@@ -1,5 +1,5 @@
-use crate::heroku_cli::maintenance;
-use crate::heroku_cli::maintenance::{HerokuCmd, Status};
+use crate::heroku_cli;
+use crate::heroku_cli::{HerokuCmd, Status};
 use chrono::{offset::TimeZone, DateTime, NaiveDateTime, Utc};
 use std::thread;
 
@@ -27,10 +27,10 @@ pub fn execute(start: &NaiveDateTime, end: &NaiveDateTime) {
     let window = MaintenanceWindow::new(start, end);
 
     sleep_until(&window.start);
-    maintenance::execute(&HerokuCmd::MaintenanceMode(Status::On));
+    heroku_cli::execute_for_all_apps_in_configs(&HerokuCmd::MaintenanceMode(Status::On));
 
     sleep_until(&window.end);
-    maintenance::execute(&HerokuCmd::MaintenanceMode(Status::Off));
+    heroku_cli::execute_for_all_apps_in_configs(&HerokuCmd::MaintenanceMode(Status::Off));
 }
 
 fn sleep_until(date_time: &DateTime<Utc>) {
