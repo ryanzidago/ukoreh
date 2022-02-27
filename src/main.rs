@@ -3,7 +3,9 @@
 mod configs;
 mod heroku_cli;
 
-use crate::heroku_cli::{HerokuCmd, Status};
+use crate::heroku_cli::maintenance::Status;
+use crate::heroku_cli::HerokuCmd;
+
 use chrono::NaiveDateTime;
 use clap::{Parser, Subcommand};
 use simple_logger::SimpleLogger;
@@ -50,12 +52,12 @@ fn main() {
             heroku_cli::maintenance::window::execute(start, end);
         }
         Command::Maintenance { on: true, off: _ } => {
-            let cmd = HerokuCmd::MaintenanceMode(Status::On);
+            let cmd = HerokuCmd::Maintenance(Status::On);
             heroku_cli::execute_for_all_apps_in_configs(&cmd);
         }
 
         Command::Maintenance { on: _, off: true } => {
-            let cmd = HerokuCmd::MaintenanceMode(Status::Off);
+            let cmd = HerokuCmd::Maintenance(Status::Off);
             heroku_cli::execute_for_all_apps_in_configs(&cmd);
         }
 

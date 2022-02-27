@@ -1,16 +1,12 @@
 pub mod maintenance;
 
 use crate::configs;
+use crate::heroku_cli::maintenance::Status;
 use std::process::{Command, Output};
 use std::str;
 
 pub enum HerokuCmd {
-    MaintenanceMode(Status),
-}
-
-pub enum Status {
-    On,
-    Off,
+    Maintenance(maintenance::Status),
 }
 
 pub fn execute(arg: &str, app_name: String) -> Output {
@@ -47,8 +43,8 @@ pub fn build_heroku_app_name_from_env(app: &str, env: &str) -> String {
 
 fn get_cmd(mode: &HerokuCmd) -> &'static str {
     match mode {
-        HerokuCmd::MaintenanceMode(Status::On) => "maintenance:on",
-        HerokuCmd::MaintenanceMode(Status::Off) => "maintenance:off",
+        HerokuCmd::Maintenance(Status::On) => "maintenance:on",
+        HerokuCmd::Maintenance(Status::Off) => "maintenance:off",
     }
 }
 
